@@ -18,9 +18,10 @@ python process_chbmit.py
 The processed data will then be placed in data/chbmit.
 Different datasets are created from the CHB-MIT data in datasets/chbmit.py.
 For each patient are available S datasets (for S seizures), where one seizure is left out in each dataset.
+See datasets/chbmit.py for the currently implemented patients.
 For example, to train with data from patient 5 and leaving out seizure 1 for testing, set the argument as 
 ```
-python train.py --dataset ChbMit_patient_5_leave_out_seizure_1 [...]
+python train.py --dataset chbmit_patient_5_leave_out_seizure_1 [...]
 ```
 
 ## New models

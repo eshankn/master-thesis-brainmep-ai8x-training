@@ -12,7 +12,7 @@ import numpy as np
 import ai8x
 
 
-class ChbMit(TorchDataset):
+class ChbMitPatientSpecific(TorchDataset):
 
     def __init__(self, root_dir, d_type=None, transform=None,
                  patient: str = "5", leave_out_seizure: int = 1):
@@ -33,7 +33,7 @@ class ChbMit(TorchDataset):
             d_type="test", only leave_out_seizure is included.
         """
         # Load and concatenate all data
-        dataset = BrainMepNasDataset(root_dir + "chbmit")
+        dataset = BrainMepNasDataset(root_dir + "/chbmit")
         if d_type == "train":
             nb_records = dataset.nb_records_per_patient[patient]
             patient_records = [i for i in range(nb_records)
@@ -71,8 +71,9 @@ class ChbMit(TorchDataset):
         return self._len
 
 
-def ChbMit_get_datasets(data, load_train=True, load_test=True,
-                        patient: str = "5", leave_out_seizure: int = 1):
+def ChbMitPatientSpecific_get_datasets(data, load_train=True, load_test=True,
+                                       patient: str = "5",
+                                       leave_out_seizure: int = 1):
     (data_dir, args) = data
     transform = transforms.Compose([
             transforms.ToTensor(),
@@ -80,40 +81,85 @@ def ChbMit_get_datasets(data, load_train=True, load_test=True,
         ])
 
     if load_train:
-        train_dataset = ChbMit(root_dir=data_dir, d_type="train",
-                               patient=patient, transform=transform,
-                               leave_out_seizure=leave_out_seizure)
+        train_dataset = ChbMitPatientSpecific(root_dir=data_dir, d_type="train",
+                                              patient=patient, transform=transform,
+                                              leave_out_seizure=leave_out_seizure)
     else:
         train_dataset = None
 
     if load_test:
-        test_dataset = ChbMit(root_dir=data_dir, d_type="test",
-                              patient=patient, transform=transform,
-                              leave_out_seizure=leave_out_seizure)
+        test_dataset = ChbMitPatientSpecific(root_dir=data_dir, d_type="test",
+                                             patient=patient, transform=transform,
+                                             leave_out_seizure=leave_out_seizure)
     else:
         test_dataset = None
 
     return train_dataset, test_dataset
 
 
-def ChbMit_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
-    return ChbMit_get_datasets(data, load_train, load_test, patient="5",
-                               leave_out_seizure=1)
+def chbmit_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True,
+                                                      load_test=True):
+    return ChbMitPatientSpecific_get_datasets(data, load_train, load_test,
+                                              patient="5", leave_out_seizure=1)
+
+def chbmit_patient_5_leave_out_seizure_2_get_datasets(data, load_train=True,
+                                                      load_test=True):
+    return ChbMitPatientSpecific_get_datasets(data, load_train, load_test,
+                                              patient="5", leave_out_seizure=2)
+
+def chbmit_patient_5_leave_out_seizure_3_get_datasets(data, load_train=True,
+                                                      load_test=True):
+    return ChbMitPatientSpecific_get_datasets(data, load_train, load_test,
+                                              patient="5", leave_out_seizure=3)
+
+def chbmit_patient_5_leave_out_seizure_4_get_datasets(data, load_train=True,
+                                                      load_test=True):
+    return ChbMitPatientSpecific_get_datasets(data, load_train, load_test,
+                                              patient="5", leave_out_seizure=4)
+
+def chbmit_patient_5_leave_out_seizure_5_get_datasets(data, load_train=True,
+                                                      load_test=True):
+    return ChbMitPatientSpecific_get_datasets(data, load_train, load_test,
+                                              patient="5", leave_out_seizure=5)
 
 
 datasets = [
     {
-        "name": "ChbMit_patient_5_leave_out_seizure_1",
+        "name": "chbmit_patient_5_leave_out_seizure_1",
         "input": (1, 4, 1024),
         "output": (0, 1),
-        "loader": ChbMit_patient_5_leave_out_seizure_1_get_datasets,
-    }
+        "loader": chbmit_patient_5_leave_out_seizure_1_get_datasets,
+    },
+    {
+        "name": "chbmit_patient_5_leave_out_seizure_2",
+        "input": (1, 4, 1024),
+        "output": (0, 1),
+        "loader": chbmit_patient_5_leave_out_seizure_2_get_datasets,
+    },
+    {
+        "name": "chbmit_patient_5_leave_out_seizure_3",
+        "input": (1, 4, 1024),
+        "output": (0, 1),
+        "loader": chbmit_patient_5_leave_out_seizure_3_get_datasets,
+    },
+    {
+        "name": "chbmit_patient_5_leave_out_seizure_4",
+        "input": (1, 4, 1024),
+        "output": (0, 1),
+        "loader": chbmit_patient_5_leave_out_seizure_4_get_datasets,
+    },
+    {
+        "name": "chbmit_patient_5_leave_out_seizure_5",
+        "input": (1, 4, 1024),
+        "output": (0, 1),
+        "loader": chbmit_patient_5_leave_out_seizure_5_get_datasets,
+    },
 ]
 
 if __name__ == "__main__":
     class ArgsObj:
         act_mode_8bit = False
-    train_ds, test_ds = ChbMit_patient_5_leave_out_1_get_datasets(("/mnt/c/Users/larochelle/data/brainmepnas_dataset/ai8x_chbmit", ArgsObj()))
+    train_ds, test_ds = chbmit_patient_5_leave_out_seizure_1_get_datasets(("../data", ArgsObj()))
     print("Train dataset")
     print(f"Length: {len(train_ds)}")
     print(f"Element 100: {train_ds[100]}")
@@ -124,4 +170,4 @@ if __name__ == "__main__":
     print(f"Length: {len(test_ds)}")
     print(f"Element 100: {test_ds[100]}")
     print(f"Dimensions: {test_ds[100][0].shape}")
-    print(f"Dimensions: {test_ds[100][1].shape}")
+    #print(f"Dimensions: {test_ds[100][1].shape}")
