@@ -21,33 +21,63 @@ class EpiDeNetA(nn.Module):
         # Input dimensions (B, C, H, W) = (B, 1, 4, 1024)
 
         # Block 1
-        self.block1_conv2d_bn_relu = ai8x.FusedConv2dBNReLU(in_channels=1,
+        self.block1_conv2d_bn_relu_1 = ai8x.FusedConv2dBNReLU(in_channels=1,
                                                           out_channels=4,
                                                           kernel_size=3,
                                                           stride=1,
                                                           padding=1)
+        self.block1_conv2d_bn_relu_2 = ai8x.FusedConv2dBNReLU(in_channels=4,
+                                                              out_channels=4,
+                                                              kernel_size=3,
+                                                              stride=1,
+                                                              padding=1)
+        self.block1_conv2d_bn_relu_3 = ai8x.FusedConv2dBNReLU(in_channels=4,
+                                                              out_channels=4,
+                                                              kernel_size=3,
+                                                              stride=1,
+                                                              padding=1)
         self.block1_conv2d_mask = torch.tensor([[0, 0, 0],
                                                 [1, 1, 1],
                                                 [0, 0, 0]])
         self.block1_maxpool1d = ai8x.MaxPool1d(kernel_size=8, stride=8)
 
         # Block 2
-        self.block2_conv2d_bn_relu = ai8x.FusedConv2dBNReLU(in_channels=4,
+        self.block2_conv2d_bn_relu_1 = ai8x.FusedConv2dBNReLU(in_channels=4,
                                                           out_channels=16,
                                                           kernel_size=3,
                                                           stride=1,
                                                           padding=1)
+        self.block2_conv2d_bn_relu_2 = ai8x.FusedConv2dBNReLU(in_channels=16,
+                                                            out_channels=16,
+                                                            kernel_size=3,
+                                                            stride=1,
+                                                            padding=1)
+        self.block2_conv2d_bn_relu_3 = ai8x.FusedConv2dBNReLU(in_channels=16,
+                                                              out_channels=16,
+                                                              kernel_size=3,
+                                                              stride=1,
+                                                              padding=1)
         self.block2_conv2d_mask = torch.tensor([[0, 0, 0],
                                                 [1, 1, 1],
                                                 [0, 0, 0]])
         self.block2_maxpool1d = ai8x.MaxPool1d(kernel_size=4, stride=4)
 
         # Block 3
-        self.block3_conv2d_bn_relu = ai8x.FusedConv2dBNReLU(in_channels=16,
+        self.block3_conv2d_bn_relu_1 = ai8x.FusedConv2dBNReLU(in_channels=16,
                                                             out_channels=16,
                                                             kernel_size=3,
                                                             stride=1,
                                                             padding=1)
+        self.block3_conv2d_bn_relu_2 = ai8x.FusedConv2dBNReLU(in_channels=16,
+                                                            out_channels=16,
+                                                            kernel_size=3,
+                                                            stride=1,
+                                                            padding=1)
+        self.block3_conv2d_bn_relu_3 = ai8x.FusedConv2dBNReLU(in_channels=16,
+                                                              out_channels=16,
+                                                              kernel_size=3,
+                                                              stride=1,
+                                                              padding=1)
         self.block3_conv2d_mask = torch.tensor([[0, 0, 0],
                                                 [1, 1, 1],
                                                 [0, 0, 0]])
@@ -85,8 +115,15 @@ class EpiDeNetA(nn.Module):
 
         # Block 1
         #print("Block 1")
-        self._mask_weights(self.block1_conv2d_bn_relu, self.block1_conv2d_mask)
-        x = self.block1_conv2d_bn_relu(x)   # (B, 4, 4, 1024)
+        self._mask_weights(self.block1_conv2d_bn_relu_1,
+                           self.block1_conv2d_mask)
+        self._mask_weights(self.block1_conv2d_bn_relu_2,
+                           self.block1_conv2d_mask)
+        self._mask_weights(self.block1_conv2d_bn_relu_3,
+                           self.block1_conv2d_mask)
+        x = self.block1_conv2d_bn_relu_1(x)   # (B, 4, 4, 1024)
+        #x = self.block1_conv2d_bn_relu_2(x)  # (B, 4, 4, 1024)
+        #x = self.block1_conv2d_bn_relu_3(x)  # (B, 4, 4, 1024)
         #print(x.shape)
 
         # Apply MaxPool1d to each EEG channel (H dimension) individually and
@@ -106,8 +143,15 @@ class EpiDeNetA(nn.Module):
 
         # Block 2
         #print("Block 2")
-        self._mask_weights(self.block2_conv2d_bn_relu, self.block2_conv2d_mask)
-        x = self.block2_conv2d_bn_relu(x)   # (B, 16, 4, 128)
+        self._mask_weights(self.block2_conv2d_bn_relu_1,
+                           self.block2_conv2d_mask)
+        self._mask_weights(self.block2_conv2d_bn_relu_2,
+                           self.block2_conv2d_mask)
+        self._mask_weights(self.block2_conv2d_bn_relu_3,
+                           self.block2_conv2d_mask)
+        x = self.block2_conv2d_bn_relu_1(x)   # (B, 16, 4, 128)
+        #x = self.block2_conv2d_bn_relu_2(x)  # (B, 16, 4, 128)
+        #x = self.block2_conv2d_bn_relu_3(x)  # (B, 16, 4, 128)
         #print(x.shape)
         x = x.view(batch, 16, 512)          # (B, 16, 512)
         #print(x.shape)
@@ -118,8 +162,15 @@ class EpiDeNetA(nn.Module):
 
         # Block 3
         #print("Block 3")
-        self._mask_weights(self.block3_conv2d_bn_relu, self.block3_conv2d_mask)
-        x = self.block3_conv2d_bn_relu(x)   # (B, 16, 4, 32)
+        self._mask_weights(self.block3_conv2d_bn_relu_1,
+                           self.block3_conv2d_mask)
+        self._mask_weights(self.block3_conv2d_bn_relu_2,
+                           self.block3_conv2d_mask)
+        self._mask_weights(self.block3_conv2d_bn_relu_3,
+                           self.block3_conv2d_mask)
+        x = self.block3_conv2d_bn_relu_1(x)   # (B, 16, 4, 32)
+        #x = self.block3_conv2d_bn_relu_2(x)  # (B, 16, 4, 32)
+        #x = self.block3_conv2d_bn_relu_3(x)  # (B, 16, 4, 32)
         #print(x.shape)
         x = x.view(batch, 16, 128)          # (B, 16, 128)
         #print(x.shape)
@@ -156,8 +207,9 @@ class EpiDeNetA(nn.Module):
     @staticmethod
     def _mask_weights(layer: ai8x.QuantizationAwareModule,
                       mask: torch.Tensor):
-        weights = layer.op.weight
-        layer.op.weight = nn.Parameter(weights * mask)
+        pass
+        #weights = layer.op.weight
+        #layer.op.weight = nn.Parameter(weights * mask)
 
 
 def epidenet_a(pretrained=False, **kwargs):
