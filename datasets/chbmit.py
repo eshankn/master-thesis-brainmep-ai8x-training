@@ -102,20 +102,24 @@ def chbmit_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True,
     return ChbMitPatientSpecific_get_datasets(data, load_train, load_test,
                                               patient="5", leave_out_seizure=1)
 
+
 def chbmit_patient_5_leave_out_seizure_2_get_datasets(data, load_train=True,
                                                       load_test=True):
     return ChbMitPatientSpecific_get_datasets(data, load_train, load_test,
                                               patient="5", leave_out_seizure=2)
+
 
 def chbmit_patient_5_leave_out_seizure_3_get_datasets(data, load_train=True,
                                                       load_test=True):
     return ChbMitPatientSpecific_get_datasets(data, load_train, load_test,
                                               patient="5", leave_out_seizure=3)
 
+
 def chbmit_patient_5_leave_out_seizure_4_get_datasets(data, load_train=True,
                                                       load_test=True):
     return ChbMitPatientSpecific_get_datasets(data, load_train, load_test,
                                               patient="5", leave_out_seizure=4)
+
 
 def chbmit_patient_5_leave_out_seizure_5_get_datasets(data, load_train=True,
                                                       load_test=True):
