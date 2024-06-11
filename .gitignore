@@ -21,3 +21,4 @@
 /super-linter.report
 /venv*/
 /typings/
+.idea/
