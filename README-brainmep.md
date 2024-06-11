@@ -31,8 +31,12 @@ All new models are placed in the models folder.
 The model epidenet_reference.py contains the original EpiDeNet model, without any adaptations for it to work on the 
 MAX78000.
 
+### EpiDeNet (A)
+Like in powerpoint, work in progress.
+
 ## New scripts
 All new scripts are placed in the scripts folder.
 Generally, there is one training script per model.
 
 - train_epidenet_reference.sh: trains the model in models/epidenet_reference.py.
+- train_epidenet_a.sh: trains the model in models/epidenet_a.py.
