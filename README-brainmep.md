@@ -13,7 +13,7 @@ All new dataset scripts and objects are placed in the datasets folder.
 ### CHB-MIT
 Raw data is processed using process_chbmit.py:
 ```
-python datasets/process_chbmit.py
+python process_chbmit.py
 ```
 The processed data will then be placed in data/chbmit.
 Different datasets are created from the CHB-MIT data in datasets/chbmit.py.

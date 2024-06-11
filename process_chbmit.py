@@ -227,4 +227,4 @@ def _get_processed_arrays(edf,
 
 if __name__ == '__main__':
     process_time_series(pathlib.Path("/mnt/c/Users/larochelle/data/chb-mit-scalp-eeg-database-1.0.0"),
-                        pathlib.Path("../data/chbmit"))
+                        pathlib.Path("data/chbmit"))
