@@ -25,4 +25,14 @@ python train.py --dataset chbmit_patient_5_leave_out_seizure_1 [...]
 ```
 
 ## New models
-[...]
+All new models are placed in the models folder.
+
+### EpiDeNet (Reference)
+The model epidenet_reference.py contains the original EpiDeNet model, without any adaptations for it to work on the 
+MAX78000.
+
+## New scripts
+All new scripts are placed in the scripts folder.
+Generally, there is one training script per model.
+
+- train_epidenet_reference.sh: trains the model in models/epidenet_reference.py.
