@@ -3,7 +3,7 @@ This is a fork of the ai8x-training repository for the purposes of the BrainMep 
 
 ## Requirements
 ```
-pip install git+https://github.com/jonathanlarochelle/brainmep-nas@features/dataset
+pip install git+https://github.com/jonathanlarochelle/brainmep-nas@features/dataset --ignore-requires-python
 pip install mne
 ```
 
