@@ -24,6 +24,15 @@ For example, to train with data from patient 5 and leaving out seizure 1 for tes
 python train.py --dataset chbmit_patient_5_leave_out_seizure_1 [...]
 ```
 
+### CHB-MIT (single-channels)
+In the single channels variant, all channels are concatenated in a 1D array 
+such that one samples corresponds to one channels for one window.
+
+Raw data is processed using process_chbmit_singlech.py:
+```
+python process_chbmit_singlech.py
+```
+
 ## New models
 All new models are placed in the models folder.
 
