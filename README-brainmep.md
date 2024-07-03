@@ -32,13 +32,19 @@ Raw data is processed using process_chbmit_singlech.py:
 ```
 python process_chbmit_singlech.py
 ```
+The processed data will then be placed in data/chbmit_singlech.
 
 ## New models
 All new models are placed in the models folder.
 
 ### EpiDeNet (Reference)
-The model epidenet_reference.py contains the original EpiDeNet model, without any adaptations for it to work on the 
+The model epidenet_reference.py contains the original EpiDeNet model, without 
+any adaptations for it to work on the 
 MAX78000.
+### EpiDeNet (Reference), Single Ch
+The model epidenet_reference_singlech.py contains the adapted EpiDeNet model 
+for a single channels, with essentially only the first three blocks and the 
+final dense layer.
 
 ### EpiDeNet (A)
 Like in powerpoint, work in progress.
