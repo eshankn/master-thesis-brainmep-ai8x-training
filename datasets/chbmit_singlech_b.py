@@ -10,13 +10,13 @@ import numpy as np
 
 # import your own module
 # import sys
-# sys.path.insert(0, '../')
+# # sys.path.insert(0, '../')
 import ai8x
 
 
 class ChbMitSingleChannelPatientSpecific(TorchDataset):
 
-    def __init__(self, root_dir, d_type=None, transform=None,
+    def __init__(self, root_dir, target_folder, d_type=None, transform=None,
                  patient: str = "2", leave_out_seizure: int = 1):
         """
         Parameters
@@ -36,7 +36,7 @@ class ChbMitSingleChannelPatientSpecific(TorchDataset):
             d_type="test", only leave_out_seizure is included.
         """
         # Load and concatenate all data
-        dataset = BrainMepNasDataset(root_dir + "/chbmit_singlech_768samples")
+        dataset = BrainMepNasDataset(root_dir + target_folder)
         if d_type == "train":
             nb_records = dataset.nb_records_per_patient[patient]
             patient_records = [i for i in range(nb_records)
@@ -75,6 +75,7 @@ class ChbMitSingleChannelPatientSpecific(TorchDataset):
 
 
 def ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train=True, load_test=True,
+                                                    dataset_folder: str = "/chbmit_singlech_1024samples",
                                                     patient: str = "5", leave_out_seizure: int = 1):
     (data_dir, args) = data
     transform = transforms.Compose([
@@ -83,13 +84,15 @@ def ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train=True, load_
         ])
 
     if load_train:
-        train_dataset = ChbMitSingleChannelPatientSpecific(root_dir=data_dir, d_type="train", patient=patient,
+        train_dataset = ChbMitSingleChannelPatientSpecific(root_dir=data_dir, target_folder=dataset_folder,
+                                                           d_type="train", patient=patient,
                                                            transform=transform, leave_out_seizure=leave_out_seizure)
     else:
         train_dataset = None
 
     if load_test:
-        test_dataset = ChbMitSingleChannelPatientSpecific(root_dir=data_dir, d_type="test", patient=patient,
+        test_dataset = ChbMitSingleChannelPatientSpecific(root_dir=data_dir, target_folder=dataset_folder,
+                                                          d_type="test", patient=patient,
                                                           transform=transform, leave_out_seizure=leave_out_seizure)
     else:
         test_dataset = None
@@ -97,52 +100,109 @@ def ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train=True, load_
     return train_dataset, test_dataset
 
 
-def chbmit_singlech_512samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
+def chbmit_singlech_16samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_16samples",
                                                            patient="5", leave_out_seizure=1)
 
 
-def chbmit_singlech_512samples_patient_5_leave_out_seizure_2_get_datasets(data, load_train=True, load_test=True):
+def chbmit_singlech_32samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
-                                                           patient="5", leave_out_seizure=2)
+                                                           dataset_folder="/chbmit_singlech_32samples",
+                                                           patient="5", leave_out_seizure=1)
 
 
-def chbmit_singlech_512samples_patient_5_leave_out_seizure_3_get_datasets(data, load_train=True, load_test=True):
+def chbmit_singlech_64samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
-                                                           patient="5", leave_out_seizure=3)
+                                                           dataset_folder="/chbmit_singlech_64samples",
+                                                           patient="5", leave_out_seizure=1)
 
 
-def chbmit_singlech_512samples_patient_5_leave_out_seizure_4_get_datasets(data, load_train=True, load_test=True):
+def chbmit_singlech_128samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
-                                                           patient="5", leave_out_seizure=4)
+                                                           dataset_folder="/chbmit_singlech_128samples",
+                                                           patient="5", leave_out_seizure=1)
 
 
-def chbmit_singlech_512samples_patient_5_leave_out_seizure_5_get_datasets(data, load_train=True, load_test=True):
+def chbmit_singlech_256samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
-                                                           patient="5", leave_out_seizure=5)
+                                                           dataset_folder="/chbmit_singlech_256samples",
+                                                           patient="5", leave_out_seizure=1)
+
+
+def chbmit_singlech_512samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_512samples",
+                                                           patient="5", leave_out_seizure=1)
 
 
 def chbmit_singlech_768samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_768samples",
+                                                           patient="5", leave_out_seizure=1)
+
+
+def chbmit_singlech_1016samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_1016samples",
+                                                           patient="5", leave_out_seizure=1)
+
+
+def chbmit_singlech_1024samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_1024samples",
                                                            patient="5", leave_out_seizure=1)
 
 
 def chbmit_singlech_512samples_patient_2_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_512samples",
                                                            patient="2", leave_out_seizure=1)
 
 
 def chbmit_singlech_768samples_patient_2_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_768samples",
                                                            patient="2", leave_out_seizure=1)
 
 
 def chbmit_singlech_1024samples_patient_2_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_1024samples",
                                                            patient="2", leave_out_seizure=1)
 
 
 datasets = [
+    {
+        "name": "chbmit_singlech_16samples_patient_5_leave_out_seizure_1",
+        "input": (1, 16),
+        "output": (0, 1),
+        "loader": chbmit_singlech_16samples_patient_5_leave_out_seizure_1_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_32samples_patient_5_leave_out_seizure_1",
+        "input": (1, 32),
+        "output": (0, 1),
+        "loader": chbmit_singlech_32samples_patient_5_leave_out_seizure_1_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_64samples_patient_5_leave_out_seizure_1",
+        "input": (1, 64),
+        "output": (0, 1),
+        "loader": chbmit_singlech_64samples_patient_5_leave_out_seizure_1_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_128samples_patient_5_leave_out_seizure_1",
+        "input": (1, 128),
+        "output": (0, 1),
+        "loader": chbmit_singlech_128samples_patient_5_leave_out_seizure_1_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_256samples_patient_5_leave_out_seizure_1",
+        "input": (1, 256),
+        "output": (0, 1),
+        "loader": chbmit_singlech_256samples_patient_5_leave_out_seizure_1_get_datasets,
+    },
     {
         "name": "chbmit_singlech_512samples_patient_5_leave_out_seizure_1",
         "input": (1, 512),
@@ -150,34 +210,22 @@ datasets = [
         "loader": chbmit_singlech_512samples_patient_5_leave_out_seizure_1_get_datasets,
     },
     {
-        "name": "chbmit_singlech_512samples_patient_5_leave_out_seizure_2",
-        "input": (1, 512),
-        "output": (0, 1),
-        "loader": chbmit_singlech_512samples_patient_5_leave_out_seizure_2_get_datasets,
-    },
-    {
-        "name": "chbmit_singlech_512samples_patient_5_leave_out_seizure_3",
-        "input": (1, 512),
-        "output": (0, 1),
-        "loader": chbmit_singlech_512samples_patient_5_leave_out_seizure_3_get_datasets,
-    },
-    {
-        "name": "chbmit_singlech_512samples_patient_5_leave_out_seizure_4",
-        "input": (1, 512),
-        "output": (0, 1),
-        "loader": chbmit_singlech_512samples_patient_5_leave_out_seizure_4_get_datasets,
-    },
-    {
-        "name": "chbmit_singlech_512samples_patient_5_leave_out_seizure_5",
-        "input": (1, 512),
-        "output": (0, 1),
-        "loader": chbmit_singlech_512samples_patient_5_leave_out_seizure_5_get_datasets,
-    },
-    {
         "name": "chbmit_singlech_768samples_patient_5_leave_out_seizure_1",
         "input": (1, 768),
         "output": (0, 1),
         "loader": chbmit_singlech_768samples_patient_5_leave_out_seizure_1_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_1016samples_patient_5_leave_out_seizure_1",
+        "input": (1, 1016),
+        "output": (0, 1),
+        "loader": chbmit_singlech_1016samples_patient_5_leave_out_seizure_1_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_1024samples_patient_5_leave_out_seizure_1",
+        "input": (1, 1024),
+        "output": (0, 1),
+        "loader": chbmit_singlech_1024samples_patient_5_leave_out_seizure_1_get_datasets,
     },
     {
         "name": "chbmit_singlech_512samples_patient_2_leave_out_seizure_1",
@@ -202,7 +250,7 @@ datasets = [
 if __name__ == "__main__":
     class ArgsObj:
         act_mode_8bit = False
-    train_ds, test_ds = chbmit_singlech_512samples_patient_2_leave_out_seizure_1_get_datasets(("../data", ArgsObj()))
+    train_ds, test_ds = chbmit_singlech_256samples_patient_5_leave_out_seizure_1_get_datasets(("../data", ArgsObj()))
     print("Train dataset")
     print(f"Length: {len(train_ds)}")
     print(f"Element 100: {train_ds[100]}")
