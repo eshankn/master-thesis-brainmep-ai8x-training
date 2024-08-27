@@ -163,27 +163,27 @@ class EpiDeNetB(nn.Module):
 
         # Block 1
         self.block1_conv1d_bn_relu_1 = ai8x.FusedConv1dBNReLU(in_channels=1, out_channels=4, kernel_size=4, stride=1,
-                                                              padding=2)  # Output: (B, 4, 769)
-        self.block1_maxpool1d_1 = ai8x.MaxPool1d(kernel_size=8, stride=8)  # Output: (B, 4, 96)
+                                                              padding=2)  # Output: (B, 4, 1017)
+        self.block1_maxpool1d_1 = ai8x.MaxPool1d(kernel_size=8, stride=8)  # Output: (B, 4, 127)
 
         # Block 2
         self.block2_conv1d_bn_relu_1 = ai8x.FusedConv1dBNReLU(in_channels=4, out_channels=16, kernel_size=5, stride=1,
-                                                              padding=2)  # Output: (B, 16, 96)
+                                                              padding=2)  # Output: (B, 16, 127)
         self.block2_conv1d_bn_relu_2 = ai8x.FusedConv1dBNReLU(in_channels=16, out_channels=16, kernel_size=5, stride=1,
-                                                              padding=2)  # Output: (B, 16, 96)
+                                                              padding=2)  # Output: (B, 16, 127)
         self.block2_conv1d_bn_relu_3 = ai8x.FusedConv1dBNReLU(in_channels=16, out_channels=16, kernel_size=5, stride=1,
-                                                              padding=2)  # Output: (B, 16, 96)
+                                                              padding=2)  # Output: (B, 16, 127)
         self.block2_conv1d_bn_relu_4 = ai8x.FusedConv1dBNReLU(in_channels=16, out_channels=16, kernel_size=4, stride=1,
-                                                              padding=2)  # Output: (B, 16, 97)
-        self.block2_maxpool1d_1 = ai8x.MaxPool1d(kernel_size=4, stride=4)  # Output: (B, 16, 24)
+                                                              padding=2)  # Output: (B, 16, 128)
+        self.block2_maxpool1d_1 = ai8x.MaxPool1d(kernel_size=4, stride=4)  # Output: (B, 16, 32)
 
         # Block 3
         self.block3_conv1d_bn_relu_1 = ai8x.FusedConv1dBNReLU(in_channels=16, out_channels=16, kernel_size=8, stride=1,
-                                                              padding=2)  # Output: (B, 16, 21)
-        self.block3_maxpool1d_1 = ai8x.MaxPool1d(kernel_size=4, stride=4)  # Output: (B, 16, 5)
+                                                              padding=2)  # Output: (B, 16, 29)
+        self.block3_maxpool1d_1 = ai8x.MaxPool1d(kernel_size=4, stride=4)  # Output: (B, 16, 7)
 
         # Block 5
-        self.block5_avgpool1d = ai8x.AvgPool1d(kernel_size=5, stride=1)  # Output: (B, 16, 1)
+        self.block5_avgpool1d = ai8x.AvgPool1d(kernel_size=7, stride=1)  # Output: (B, 16, 1)
 
         # Block 6
         self.block6_flatten = nn.Flatten()  # Output: (B, 16)
