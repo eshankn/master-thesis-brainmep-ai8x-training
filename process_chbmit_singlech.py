@@ -15,8 +15,8 @@ import numpy as np
 from brainmepnas.dataset import create_new_dataset, add_record_to_dataset
 
 # Fixed parameters
-WINDOW_DURATION = 4     # seconds
-TRAIN_WINDOW_OFFSET = 4    # seconds
+WINDOW_DURATION = 3.97     # seconds
+TRAIN_WINDOW_OFFSET = 3.97    # seconds
 TEST_WINDOW_OFFSET = 2     # seconds
 CHANNELS = ["F7-T7", "T7-P7", "F8-T8", "T8-P8-0"]
 
@@ -247,10 +247,19 @@ def _interleave_channels(input: np.ndarray, labels: np.ndarray) -> np.ndarray:
     new_input[3::4] = input[:, :, 3]
     new_input = new_input.reshape((new_input.shape[0], new_input.shape[1], 1))
 
+    # new_input = np.empty((input.shape[0]*input.shape[2], 16),
+    #                      dtype=input.dtype)
+    # new_input[0::4] = input[:, :16, 0]
+    # new_input[1::4] = input[:, :16, 1]
+    # new_input[2::4] = input[:, :16, 2]
+    # new_input[3::4] = input[:, :16, 3]
+    # new_input = new_input.reshape((new_input.shape[0], 16, 1))
+
     new_labels = np.repeat(labels, repeats=4, axis=0)
     return new_input, new_labels
 
 
 if __name__ == '__main__':
-    process_time_series_single_ch(pathlib.Path("/mnt/c/Users/larochelle/data/chb-mit-scalp-eeg-database-1.0.0"),
-                        pathlib.Path("data/chbmit_singlech"))
+    process_time_series_single_ch(pathlib.Path("K:/2022_BrainMEP/Low Power Algorithms/50_Students/1_Eshank_Nazare/"
+                                               "5_Code/Dataset/chb-mit-scalp-eeg-database-1.0.0"),
+                                  pathlib.Path("data/chbmit_singlech_1016samples"))
