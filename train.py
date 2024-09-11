@@ -52,6 +52,7 @@ import fnmatch
 import logging
 import operator
 import os
+import json
 
 # pylint: disable=wrong-import-position
 if os.name == 'posix':
@@ -129,6 +130,9 @@ weight_count = None
 weight_sum = None
 weight_stddev = None
 weight_mean = None
+
+json_dict = {"train_loss_obj": [], "train_loss_ovr": [], "train_acc": [], "val_loss": [], "val_acc": [], "time": [],
+               "lr": []}
 
 
 def main():
@@ -645,6 +649,9 @@ def main():
             update_training_scores_history(perf_scores_history, model, top1, top5, mAP, vloss,
                                            epoch, args)
 
+            json_dict["val_loss"].append(vloss)
+            json_dict["val_acc"].append(top1)
+
             # Save the checkpoint
             if run_validation:
                 is_best = epoch == perf_scores_history[0].epoch
@@ -1005,6 +1012,14 @@ def train(train_loader, model, criterion, optimizer, epoch,
                                             epoch, steps_completed,
                                             steps_per_epoch, args.print_freq,
                                             loggers)
+
+            if steps_completed == steps_per_epoch:
+                json_dict["train_loss_obj"].append(stats_dict[OBJECTIVE_LOSS_KEY])
+                json_dict["train_loss_ovr"].append(stats_dict[OVERALL_LOSS_KEY])
+                json_dict["train_acc"].append(stats_dict['Top1'])
+                json_dict["lr"].append(stats_dict['LR'])
+                json_dict["time"].append(batch_time.sum)
+
         end = time.time()
     return acc_stats
 
@@ -1933,6 +1948,9 @@ if __name__ == '__main__':
             msglogger.handlers = handlers_bak
         raise
     finally:
+        json = json.dumps(json_dict)
+        with open(os.path.join(msglogger.logdir, "model_metrics.json"), "w") as file:
+            file.write(json)
         if msglogger is not None:
             msglogger.info('')
             msglogger.info('Log file for this run: %s', os.path.realpath(msglogger.log_filename))
