@@ -545,6 +545,8 @@ def main():
                    len(train_loader.sampler), len(val_loader.sampler), len(test_loader.sampler))
 
     vloss = 10**6
+    best_vloss = float('inf')
+    patience = 10
     for epoch in range(start_epoch, ending_epoch):
         # pylint: disable=unsubscriptable-object
         if qat_policy is not None and epoch > 0 and epoch == qat_policy['start_epoch']:
@@ -663,6 +665,23 @@ def main():
                                      scheduler=compression_scheduler, extras=checkpoint_extras,
                                      is_best=is_best, name=checkpoint_name,
                                      dir=msglogger.logdir)
+
+            # ------------------------------------------------------------------------------------------
+            # Custom early stopping implementation
+            # ------------------------------------------------------------------------------------------
+            if vloss < best_vloss:
+                best_vloss = vloss
+                patience = 10
+            else:
+                patience -= 1
+                if patience == 0:
+                    msglogger.info('')
+                    msglogger.info('----------------------------------------------------------------------')
+                    msglogger.info('Validation loss not improved. Implementing early stopping')
+                    msglogger.info('----------------------------------------------------------------------')
+                    msglogger.info('')
+                    break
+            # ------------------------------------------------------------------------------------------
 
         if compression_scheduler:
             compression_scheduler.on_epoch_end(epoch, optimizer)
