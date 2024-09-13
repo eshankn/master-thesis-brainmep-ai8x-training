@@ -239,6 +239,9 @@ def get_parser(model_names, dataset_names):
                         help='List of EarlyExit thresholds (e.g. --earlyexit_thresholds 1.2 0.9)')
     parser.add_argument('--num-best-scores', dest='num_best_scores', default=1, type=int,
                         help='number of best scores to track and report (default: 1)')
+    parser.add_argument('--track-vloss', dest='track_vloss', action='store_true', default=False,
+                        help='track validation loss for comparing checkpoints.'
+                             'Default behaviour is to check for top1 accuracy')
     parser.add_argument('--load-serialized', dest='load_serialized', action='store_true',
                         default=False,
                         help='Load a model without DataParallel wrapping it')

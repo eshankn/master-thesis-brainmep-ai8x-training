@@ -550,6 +550,8 @@ def main():
 
     vloss = 10**6
     best_vloss = float('inf')
+    best_epoch = 0
+    best_accuracy = 0
     patience = 10
     for epoch in range(start_epoch, ending_epoch):
         # pylint: disable=unsubscriptable-object
@@ -657,6 +659,8 @@ def main():
                 is_best = epoch == perf_scores_history[0].epoch
                 checkpoint_extras = {'current_top1': top1,
                                      'best_top1': perf_scores_history[0].top1,
+                                     'current_vloss': vloss,
+                                     'best_vloss': -perf_scores_history[0].vloss,
                                      'current_mAP': mAP,
                                      'best_mAP': perf_scores_history[0].mAP,
                                      'best_epoch': perf_scores_history[0].epoch}
@@ -678,6 +682,8 @@ def main():
             # ------------------------------------------------------------------------------------------
             if vloss < best_vloss:
                 best_vloss = vloss
+                best_epoch = epoch
+                best_accuracy = top1
                 patience = 10
             else:
                 patience -= 1
@@ -685,6 +691,10 @@ def main():
                     msglogger.info('')
                     msglogger.info('----------------------------------------------------------------------')
                     msglogger.info('Validation loss not improved. Implementing early stopping')
+                    msglogger.info('')
+                    msglogger.info('Best Epoch: %d', best_epoch)
+                    msglogger.info('Validation Loss: %.3f', best_vloss)
+                    msglogger.info('Top1: %.3f', best_accuracy)
                     msglogger.info('----------------------------------------------------------------------')
                     msglogger.info('')
                     break
@@ -1527,9 +1537,13 @@ def update_training_scores_history(perf_scores_history, model, top1, top5, mAP, 
 
             # Keep perf_scores_history sorted from best to worst
             if not args.sparsity_perf:
-                # Sort by top1 as main sort key, then sort by top5 and epoch
-                perf_scores_history.sort(key=operator.attrgetter('top1', 'top5', 'epoch'),
-                                         reverse=True)
+                if not args.track_vloss:
+                    # Sort by top1 as main sort key, then sort by top5 and epoch
+                    perf_scores_history.sort(key=operator.attrgetter('top1', 'top5', 'epoch'),
+                                             reverse=True)
+                else:
+                    perf_scores_history.sort(key=operator.attrgetter('vloss'),
+                                             reverse=True)
             else:
                 # Sort by sparsity as main sort key, then sort by top1, top5 and epoch
                 perf_scores_history.sort(key=operator.attrgetter('params_nnz_cnt', 'top1',
@@ -1542,10 +1556,16 @@ def update_training_scores_history(perf_scores_history, model, top1, top5, mAP, 
                                    score.top1, score.top5, score.sparsity, -score.params_nnz_cnt,
                                    score.epoch)
                 else:
-                    msglogger.info('==> Best [Top1: %.3f   Sparsity:%.2f   '
-                                   'Params: %d on epoch: %d]',
-                                   score.top1, score.sparsity, -score.params_nnz_cnt,
-                                   score.epoch)
+                    if not args.track_vloss:
+                        msglogger.info('==> Best [Top1: %.3f   Sparsity:%.2f   '
+                                       'Params: %d on epoch: %d]',
+                                       score.top1, score.sparsity, -score.params_nnz_cnt,
+                                       score.epoch)
+                    else:
+                        msglogger.info('==> Best [Loss: %.3f   Top1: %.3f   Sparsity: %.2f   '
+                                       'Params: %d on epoch: %d]',
+                                       -score.vloss, score.top1, score.sparsity, -score.params_nnz_cnt,
+                                       score.epoch)
         else:
 
             # Sort by MSE as main sort key, then sort by epoch
