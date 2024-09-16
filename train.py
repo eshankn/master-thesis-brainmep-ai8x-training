@@ -52,6 +52,7 @@ import fnmatch
 import logging
 import operator
 import os
+import json
 
 # pylint: disable=wrong-import-position
 if os.name == 'posix':
@@ -129,6 +130,9 @@ weight_count = None
 weight_sum = None
 weight_stddev = None
 weight_mean = None
+
+json_dict = {"train_loss_obj": [], "train_loss_ovr": [], "train_acc": [], "val_loss": [], "val_acc": [], "time": [],
+               "lr": []}
 
 
 def main():
@@ -545,6 +549,10 @@ def main():
                    len(train_loader.sampler), len(val_loader.sampler), len(test_loader.sampler))
 
     vloss = 10**6
+    best_vloss = float('inf')
+    best_epoch = 0
+    best_accuracy = 0
+    patience = 10
     for epoch in range(start_epoch, ending_epoch):
         # pylint: disable=unsubscriptable-object
         if qat_policy is not None and epoch > 0 and epoch == qat_policy['start_epoch']:
@@ -643,11 +651,16 @@ def main():
             update_training_scores_history(perf_scores_history, model, top1, top5, mAP, vloss,
                                            epoch, args)
 
+            json_dict["val_loss"].append(vloss)
+            json_dict["val_acc"].append(top1)
+
             # Save the checkpoint
             if run_validation:
                 is_best = epoch == perf_scores_history[0].epoch
                 checkpoint_extras = {'current_top1': top1,
                                      'best_top1': perf_scores_history[0].top1,
+                                     'current_vloss': vloss,
+                                     'best_vloss': -perf_scores_history[0].vloss,
                                      'current_mAP': mAP,
                                      'best_mAP': perf_scores_history[0].mAP,
                                      'best_epoch': perf_scores_history[0].epoch}
@@ -663,6 +676,29 @@ def main():
                                      scheduler=compression_scheduler, extras=checkpoint_extras,
                                      is_best=is_best, name=checkpoint_name,
                                      dir=msglogger.logdir)
+
+            # ------------------------------------------------------------------------------------------
+            # Custom early stopping implementation
+            # ------------------------------------------------------------------------------------------
+            if vloss < best_vloss:
+                best_vloss = vloss
+                best_epoch = epoch
+                best_accuracy = top1
+                patience = 10
+            else:
+                patience -= 1
+                if patience == 0:
+                    msglogger.info('')
+                    msglogger.info('----------------------------------------------------------------------')
+                    msglogger.info('Validation loss not improved. Implementing early stopping')
+                    msglogger.info('')
+                    msglogger.info('Best Epoch: %d', best_epoch)
+                    msglogger.info('Validation Loss: %.3f', best_vloss)
+                    msglogger.info('Top1: %.3f', best_accuracy)
+                    msglogger.info('----------------------------------------------------------------------')
+                    msglogger.info('')
+                    break
+            # ------------------------------------------------------------------------------------------
 
         if compression_scheduler:
             compression_scheduler.on_epoch_end(epoch, optimizer)
@@ -986,6 +1022,14 @@ def train(train_loader, model, criterion, optimizer, epoch,
                                             epoch, steps_completed,
                                             steps_per_epoch, args.print_freq,
                                             loggers)
+
+            if steps_completed == steps_per_epoch:
+                json_dict["train_loss_obj"].append(stats_dict[OBJECTIVE_LOSS_KEY])
+                json_dict["train_loss_ovr"].append(stats_dict[OVERALL_LOSS_KEY])
+                json_dict["train_acc"].append(stats_dict['Top1'])
+                json_dict["lr"].append(stats_dict['LR'])
+                json_dict["time"].append(batch_time.sum)
+
         end = time.time()
     return acc_stats
 
@@ -1493,9 +1537,13 @@ def update_training_scores_history(perf_scores_history, model, top1, top5, mAP, 
 
             # Keep perf_scores_history sorted from best to worst
             if not args.sparsity_perf:
-                # Sort by top1 as main sort key, then sort by top5 and epoch
-                perf_scores_history.sort(key=operator.attrgetter('top1', 'top5', 'epoch'),
-                                         reverse=True)
+                if not args.track_vloss:
+                    # Sort by top1 as main sort key, then sort by top5 and epoch
+                    perf_scores_history.sort(key=operator.attrgetter('top1', 'top5', 'epoch'),
+                                             reverse=True)
+                else:
+                    perf_scores_history.sort(key=operator.attrgetter('vloss'),
+                                             reverse=True)
             else:
                 # Sort by sparsity as main sort key, then sort by top1, top5 and epoch
                 perf_scores_history.sort(key=operator.attrgetter('params_nnz_cnt', 'top1',
@@ -1508,10 +1556,16 @@ def update_training_scores_history(perf_scores_history, model, top1, top5, mAP, 
                                    score.top1, score.top5, score.sparsity, -score.params_nnz_cnt,
                                    score.epoch)
                 else:
-                    msglogger.info('==> Best [Top1: %.3f   Sparsity:%.2f   '
-                                   'Params: %d on epoch: %d]',
-                                   score.top1, score.sparsity, -score.params_nnz_cnt,
-                                   score.epoch)
+                    if not args.track_vloss:
+                        msglogger.info('==> Best [Top1: %.3f   Sparsity:%.2f   '
+                                       'Params: %d on epoch: %d]',
+                                       score.top1, score.sparsity, -score.params_nnz_cnt,
+                                       score.epoch)
+                    else:
+                        msglogger.info('==> Best [Loss: %.3f   Top1: %.3f   Sparsity: %.2f   '
+                                       'Params: %d on epoch: %d]',
+                                       -score.vloss, score.top1, score.sparsity, -score.params_nnz_cnt,
+                                       score.epoch)
         else:
 
             # Sort by MSE as main sort key, then sort by epoch
@@ -1914,6 +1968,9 @@ if __name__ == '__main__':
             msglogger.handlers = handlers_bak
         raise
     finally:
+        json = json.dumps(json_dict)
+        with open(os.path.join(msglogger.logdir, "model_metrics.json"), "w") as file:
+            file.write(json)
         if msglogger is not None:
             msglogger.info('')
             msglogger.info('Log file for this run: %s', os.path.realpath(msglogger.log_filename))
