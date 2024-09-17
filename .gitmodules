@@ -1,4 +1,4 @@
 [submodule "distiller"]
 	path = distiller
 	url = https://github.com/eshankn/master-thesis-distiller.git
-	branch = dev-en-pytorch-1.8
+	branch = dev-pytorch-1.8-en
