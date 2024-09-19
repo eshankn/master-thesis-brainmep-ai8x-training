@@ -1,5 +1,6 @@
 
 import os
+import csv
 import time
 import fnmatch
 from pydoc import locate
@@ -1011,6 +1012,21 @@ if __name__ == '__main__':
     predicted_array = np.where(predicted_array >= 0.5, 1, 0)
 
     am_after = AccuracyMetrics(target_array, predicted_array, 3.97, 2, threshold="max_f_score")
+
+    am_before = am_before.as_dict()
+    am_after = am_after.as_dict()
+
+    with open(os.path.join(msglogger.logdir, 'acc_metrics_separate_ch.csv'), 'w', newline='') as csvfile:
+        fieldnames = list(am_before.keys())
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow(am_before)
+
+    with open(os.path.join(msglogger.logdir, 'acc_metrics_concat_ch.csv'), 'w', newline='') as csvfile:
+        fieldnames = list(am_after.keys())
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow(am_after)
 
     try:
         pass
