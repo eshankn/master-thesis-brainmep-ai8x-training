@@ -114,6 +114,8 @@ def get_parser(model_names, dataset_names):
                                 metavar='M', help='momentum')
     optimizer_args.add_argument('--weight-decay', '--wd', default=1e-4, type=float,
                                 metavar='W', help='weight decay (default: 1e-4)')
+    optimizer_args.add_argument('--reduce-lr-sched', dest='reduce_lr_sched', action='store_true',
+                                default=False, help='implement custom ReduceLROnPlateau learning rate scheduler')
 
     parser.add_argument('--print-freq', '-p', default=10, type=int,
                         metavar='N', help='print frequency (default: 10)')

@@ -132,7 +132,7 @@ weight_stddev = None
 weight_mean = None
 
 json_dict = {"train_loss_obj": [], "train_loss_ovr": [], "train_acc": [], "val_loss": [], "val_acc": [], "time": [],
-               "lr": []}
+             "lr": []}
 
 
 def main():
@@ -553,6 +553,8 @@ def main():
     best_epoch = 0
     best_accuracy = 0
     patience = 10
+    lr_scheduler_patience = 5
+    lr_scheduler_factor = 0.1
     for epoch in range(start_epoch, ending_epoch):
         # pylint: disable=unsubscriptable-object
         if qat_policy is not None and epoch > 0 and epoch == qat_policy['start_epoch']:
@@ -685,6 +687,7 @@ def main():
                 best_epoch = epoch
                 best_accuracy = top1
                 patience = 10
+                lr_scheduler_patience = 5
             else:
                 patience -= 1
                 if patience == 0:
@@ -698,6 +701,18 @@ def main():
                     msglogger.info('----------------------------------------------------------------------')
                     msglogger.info('')
                     break
+
+                if args.reduce_lr_sched:
+                    lr_scheduler_patience -= 1
+                    if lr_scheduler_patience == 0:
+                        optimizer.param_groups[0]['lr'] *= lr_scheduler_factor
+                        lr_scheduler_patience = 5
+                        msglogger.info('')
+                        msglogger.info('----------------------------------------------------------------------')
+                        msglogger.info('Validation loss not improved. Reducing learning rate')
+                        msglogger.info('LR: %.9f', optimizer.param_groups[0]['lr'])
+                        msglogger.info('----------------------------------------------------------------------')
+
             # ------------------------------------------------------------------------------------------
 
         if compression_scheduler:
