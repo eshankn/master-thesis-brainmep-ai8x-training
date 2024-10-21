@@ -125,6 +125,8 @@ def load_model():
             # pylint: enable=unsubscriptable-object
         model = apputils.load_lean_checkpoint(model, args.load_model_path,
                                               model_device=args.device)
+        # model, compression_scheduler, optimizer, start_epoch = apputils.load_checkpoint(
+        #     model, args.load_model_path, model_device=args.device)
         ai8x.update_model(model)
 
     criterion = nn.CrossEntropyLoss().to(args.device)
@@ -139,7 +141,8 @@ def load_model():
         args.datasets_fn, (os.path.expanduser(args.data), args), args.batch_size,
         args.workers, args.validation_split, args.deterministic,
         args.effective_train_size, args.effective_valid_size, args.effective_test_size,
-        test_only=args.evaluate, collate_fn=args.collate_fn, cpu=args.device == 'cpu', rand_data=False)
+        test_only=args.evaluate, collate_fn=args.collate_fn, cpu=args.device == 'cpu',
+        rand_data=False, custom_shuffle_split=args.custom_shuffle_split)
     assert args.evaluate or train_loader is not None and val_loader is not None, \
         "No training and/or validation data in train mode"
     assert not args.evaluate or test_loader is not None, "No test data in eval mode"
@@ -155,7 +158,7 @@ def load_model():
     # evaluate_model(model, criterion, test_loader, pylogger, activations_collectors,
     #                args, compression_scheduler)
 
-    return model, criterion, test_loader, pylogger, args
+    return model, criterion, train_loader, val_loader, test_loader, pylogger, args
 
 
 def custom_evaluate(model, criterion, data_loader, loggers, args, epoch=-1):
@@ -217,7 +220,11 @@ def custom_evaluate(model, criterion, data_loader, loggers, args, epoch=-1):
                 confusion.add(output.data, target)
 
             predicted_labels = output.data.cpu().numpy()
-            predicted_labels = np.argmax(predicted_labels, 1)
+            # predicted_labels = np.argmax(predicted_labels, 1)
+
+            predicted_labels = (predicted_labels + 1) / 2
+            predicted_labels = predicted_labels[:, 1]
+
             true_labels = target.cpu().numpy()
 
             # predicted_labels_array = np.append(predicted_labels_array, predicted_labels)
@@ -991,42 +998,50 @@ def custom_evaluate(model, criterion, data_loader, loggers, args, epoch=-1):
 
 if __name__ == '__main__':
 
-    model, criterion, test_loader, pylogger, args = load_model()
+    model, criterion, train_loader, val_loader, test_loader, pylogger, args = load_model()
 
-    predicted_array, target_array = custom_evaluate(model, criterion, test_loader, pylogger, args)
+    train_predicted_arr, train_target_arr = custom_evaluate(model, criterion, train_loader, pylogger, args)
+    test_predicted_arr, test_target_arr = custom_evaluate(model, criterion, test_loader, pylogger, args)
 
-    predicted_array = np.hstack(np.array(predicted_array))
-    target_array = np.hstack(np.array(target_array))
+    train_predicted_arr = np.hstack(np.array(train_predicted_arr))
+    train_target_arr = np.hstack(np.array(train_target_arr))
+    test_predicted_arr = np.hstack(np.array(test_predicted_arr))
+    test_target_arr = np.hstack(np.array(test_target_arr))
 
-    am_before = AccuracyMetrics(target_array, predicted_array, 3.97, 2, threshold="max_f_score")
+    am_train = AccuracyMetrics(train_target_arr, train_predicted_arr, 3.97, 2, threshold="max_sample_f_score")
+    threshold = am_train.threshold
+
+    am_test_sep = AccuracyMetrics(test_target_arr, test_predicted_arr, 3.97, 2, threshold=threshold)
 
     # test_array = predicted_array[0::4]
 
     num_channels = 4
-    predicted_array = predicted_array.reshape(predicted_array.shape[0] // num_channels, num_channels)
-    target_array = target_array.reshape(target_array.shape[0] // num_channels, num_channels)
+    test_predicted_arr = test_predicted_arr.reshape(test_predicted_arr.shape[0] // num_channels, num_channels)
+    test_target_arr = test_target_arr.reshape(test_target_arr.shape[0] // num_channels, num_channels)
 
-    predicted_array = predicted_array.mean(axis=1)
-    target_array = target_array.mean(axis=1)
+    test_predicted_arr = test_predicted_arr.mean(axis=1)
+    test_target_arr = test_target_arr.mean(axis=1)
 
-    predicted_array = np.where(predicted_array >= 0.5, 1, 0)
+    # test_predicted_arr = np.where(test_predicted_arr >= 0.5, 1, 0)
 
-    am_after = AccuracyMetrics(target_array, predicted_array, 3.97, 2, threshold="max_f_score")
+    am_test_concat = AccuracyMetrics(test_target_arr, test_predicted_arr, 3.97, 2, threshold=threshold)
 
-    am_before = am_before.as_dict()
-    am_after = am_after.as_dict()
+    am_test_sep = am_test_sep.as_dict()
+    am_test_concat = am_test_concat.as_dict()
 
-    with open(os.path.join(msglogger.logdir, 'acc_metrics_separate_ch.csv'), 'w', newline='') as csvfile:
-        fieldnames = list(am_before.keys())
+    with open(os.path.join(msglogger.logdir, os.path.basename(msglogger.logdir) + '-acc_metrics_separate_ch.csv'),
+              'w', newline='') as csvfile:
+        fieldnames = list(am_test_sep.keys())
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerow(am_before)
+        writer.writerow(am_test_sep)
 
-    with open(os.path.join(msglogger.logdir, 'acc_metrics_concat_ch.csv'), 'w', newline='') as csvfile:
-        fieldnames = list(am_after.keys())
+    with open(os.path.join(msglogger.logdir, os.path.basename(msglogger.logdir) + '-acc_metrics_concat_ch.csv'),
+              'w', newline='') as csvfile:
+        fieldnames = list(am_test_concat.keys())
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerow(am_after)
+        writer.writerow(am_test_concat)
 
     try:
         pass
