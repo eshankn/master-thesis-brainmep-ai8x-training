@@ -193,6 +193,8 @@ def get_parser(model_names, dataset_names):
     parser.add_argument('--name', '-n', metavar='NAME', default=None, help='Experiment name')
     parser.add_argument('--out-dir', '-o', dest='output_dir', default='logs', help='Path to dump '
                         'logs and checkpoints')
+    parser.add_argument('--custom-shuffle-split', dest='custom_shuffle_split', action='store_true', default=False,
+                        help='Shuffle the dataset and split it according to custom implementation')
     parser.add_argument('--validation-split', '--valid-size', '--vs', dest='validation_split',
                         type=float_range(exc_max=True), default=0.1,
                         help='Portion of training dataset to set aside for validation')
