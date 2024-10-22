@@ -15,9 +15,9 @@ import numpy as np
 from brainmepnas.dataset import create_new_dataset, add_record_to_dataset
 
 # Fixed parameters
-WINDOW_DURATION = 4     # seconds
-TRAIN_WINDOW_OFFSET = 4    # seconds
-TEST_WINDOW_OFFSET = 2     # seconds
+WINDOW_DURATION = 3     # seconds
+TRAIN_WINDOW_OFFSET = 3    # seconds
+TEST_WINDOW_OFFSET = 1.5     # seconds
 CHANNELS = ["F7-T7", "T7-P7", "F8-T8", "T8-P8-0"]
 
 
@@ -227,4 +227,4 @@ def _get_processed_arrays(edf,
 
 if __name__ == '__main__':
     process_time_series(pathlib.Path("/mnt/c/Users/larochelle/data/chb-mit-scalp-eeg-database-1.0.0"),
-                        pathlib.Path("data/chbmit"))
+                        pathlib.Path("data/chbmit_768samples"))
