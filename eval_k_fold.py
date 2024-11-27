@@ -1,4 +1,13 @@
+# ------------------------------------------------------------------------------------------
+# Author        : Eshank Jayant Nazare
+# File          : eval_k_fold.py
+# Project       : BrainMEP
+# Modified      : 27.11.2024
+# Description   : Evaluation of different cross-validation folds for leave-one-seizure-out
+#                 using AccuracyMetrics
+# ------------------------------------------------------------------------------------------
 
+# import modules and libraries
 import os
 import csv
 import json
@@ -6,20 +15,18 @@ import time
 import fnmatch
 from pydoc import locate
 from collections import OrderedDict
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torchnet.meter as tnt
 
+# import custom modules
 import ai8x
 import distiller
 import parsecmd
 import parse_qat_yaml
-
 from distiller import apputils
 from distiller.data_loggers import PythonLogger
-
 from train import (create_model, update_old_model_params, create_optimizer, OVERALL_LOSS_KEY, OBJECTIVE_LOSS_KEY)
 
 from brainmepnas import AccuracyMetrics
@@ -27,10 +34,20 @@ from brainmepnas import AccuracyMetrics
 # Logger handle
 msglogger = None
 
-CROSS_VAL_PATH = './logs/cross_validation/epidenet_v3.2_768samples_qat1'
+# Set evaluation parameters
+PATIENT = 5
+CROSS_VAL_PATH = './logs/cross_validation/epidenet_v3.2_768samples_qat8'
+FILE_NAME = 'epidenet_v3.2_768_samples_patient_5_qat8'
+
+# Set evaluation for Post-training Quantization (PTQ)
+ptq = False
 
 
 def load_model():
+    """
+    Function to load the model and dataset as specified in the arguments. Adapted from train.py script.
+    Returns the model as well as training and test dataset loaders.
+    """
 
     script_dir = os.path.dirname(__file__)
     global msglogger
@@ -83,15 +100,31 @@ def load_model():
     else:
         checkpoint_filename = 'qat_best-q.pth.tar'
 
+    if ptq:
+        checkpoint_filename = 'best_wo_batchnorm-q.pth.tar'
+
     for fold_idx, folder in enumerate(sorted(os.listdir(CROSS_VAL_PATH))):
         if len(folder.split('_')) < 5:
             continue
 
+        # ----------------------------------------
+        # Comment section for PTQ
+        if not args.act_mode_8bit:
+            if len(folder.split('_')) > 9:
+                continue
+        else:
+            if len(folder.split('_')) < 10:
+                continue
+        # ----------------------------------------
+
         samples = folder.split('_')[3]
         leaveout = folder.split('_')[5][-1]
 
-        args.dataset = 'chbmit_singlech_' + samples + '_patient_5_leave_out_seizure_' + leaveout
-        args.load_model_path = os.path.join(CROSS_VAL_PATH, folder, checkpoint_filename)
+        args.dataset = 'chbmit_singlech_' + samples + '_patient_' + str(PATIENT) + '_leave_out_seizure_' + leaveout
+        if not ptq:
+            args.load_model_path = os.path.join(CROSS_VAL_PATH, folder, checkpoint_filename)
+        else:
+            args.load_model_path = os.path.join(CROSS_VAL_PATH, folder, 'ptq', checkpoint_filename)
 
         selected_source = next((item for item in supported_sources if item['name'] == args.dataset))
         args.labels = selected_source['output']
@@ -138,8 +171,14 @@ def load_model():
         #                                           model_device=args.device)
         #     ai8x.update_model(model)
 
+        # --------------------------------------------------------------------------------
+        # Custom implementation for fusing batch norm layers based on arguement
+
         if args.load_model_path:
-            update_old_model_params(args.load_model_path, model)
+            try:
+                update_old_model_params(args.load_model_path, model)
+            except:
+                continue
             if args.act_mode_8bit:
                 # pylint: disable=unsubscriptable-object
                 ai8x.fuse_bn_layers(model)
@@ -152,12 +191,16 @@ def load_model():
                                                   model_device=args.device)
             ai8x.update_model(model)
 
+        # --------------------------------------------------------------------------------
+
         criterion = nn.CrossEntropyLoss().to(args.device)
 
         optimizer = create_optimizer(model, args)
         msglogger.info('Optimizer Type: %s', type(optimizer))
         msglogger.info('Optimizer Args: %s', optimizer.defaults)
 
+        # Load the training, validation and test data loaders. To ensure proper late channel integration, data should
+        # be sequential and without randomization. Use rand_data = False.
         train_loader, val_loader, test_loader, _ = apputils.get_data_loaders(
             args.datasets_fn, (os.path.expanduser(args.data), args), args.batch_size,
             args.workers, args.validation_split, args.deterministic,
@@ -177,6 +220,9 @@ def load_model():
 
 
 def custom_evaluate(model, criterion, data_loader, loggers, args, epoch=-1):
+    """
+    Evaluate the specified model on the given dataset
+    """
 
     msglogger.info('--- test ---------------------')
 
@@ -232,8 +278,12 @@ def custom_evaluate(model, criterion, data_loader, loggers, args, epoch=-1):
                 confusion.add(output.data, target)
 
             predicted_labels = output.data.cpu().numpy()
+
+            # The probability of the sample being a seizure is taken into consideration instead of using argmax
             # predicted_labels = np.argmax(predicted_labels, 1)
 
+            # The prediction labels are converted from range [-1, 1] to [0, 1]. Only the probability of the sample
+            # being a seizure is considered for AccuracyMetrics
             predicted_labels = (predicted_labels + 1) / 2
             predicted_labels = predicted_labels[:, 1]
 
@@ -271,12 +321,14 @@ def custom_evaluate(model, criterion, data_loader, loggers, args, epoch=-1):
 
 if __name__ == '__main__':
 
+    # Define an empty dictionary for storing the required metrics
     cross_val_metrics_dict = {"sample_accuracy": OrderedDict(), "sample_precision": OrderedDict(),
                               "sample_sensitivity": OrderedDict(), "sample_specificity": OrderedDict(),
                               "sample_f_score": OrderedDict(), "sample_balanced_accuracy": OrderedDict(),
                               "sample_roc_auc": OrderedDict(), "sample_prc_auc": OrderedDict(),
                               "event_sensitivity": OrderedDict(), "event_precision": OrderedDict(),
-                              "event_f_score": OrderedDict(), "event_false_detections_per_hour": OrderedDict()}
+                              "event_f_score": OrderedDict(), "event_false_detections_per_hour": OrderedDict(),
+                              "event_average_detection_delay": OrderedDict()}
 
     sample_accuracy_arr = []
     sample_precision_arr = []
@@ -291,21 +343,38 @@ if __name__ == '__main__':
     event_precision_arr = []
     event_f_score_arr = []
     event_false_detections_per_hour_arr = []
+    event_average_detection_delay_arr = []
 
     for fold, (model, criterion, train_loader, test_loader, pylogger, args) in enumerate(load_model()):
+        # Get the training and test predicted labels
         train_predicted_arr, train_target_arr = custom_evaluate(model, criterion, train_loader, pylogger, args)
         test_predicted_arr, test_target_arr = custom_evaluate(model, criterion, test_loader, pylogger, args)
 
+        # Convert the prediction arrays into required format
         train_predicted_arr = np.hstack(np.array(train_predicted_arr))
         train_target_arr = np.hstack(np.array(train_target_arr))
         test_predicted_arr = np.hstack(np.array(test_predicted_arr))
         test_target_arr = np.hstack(np.array(test_target_arr))
 
-        am_train = AccuracyMetrics(train_target_arr, train_predicted_arr, 3.97, 2, threshold="max_sample_f_score")
+        if '512' in args.dataset:
+            sample_window_duration = 2
+        elif '768' in args.dataset:
+            sample_window_duration = 3
+        elif '1016' in args.dataset:
+            sample_window_duration = 3.97
+        else:
+            sample_window_duration = 4
+
+        # Evalute the training dataset and use its threshold for test dataset
+        am_train = AccuracyMetrics(train_target_arr, train_predicted_arr, sample_window_duration, 2,
+                                   threshold="max_sample_f_score")
         threshold = am_train.threshold
 
-        am_test_sep = AccuracyMetrics(test_target_arr, test_predicted_arr, 3.97, 2, threshold=threshold)
+        am_test_sep = AccuracyMetrics(test_target_arr, test_predicted_arr, sample_window_duration, 2,
+                                      threshold=threshold)
 
+        # Concatenate the separated channels as part of late channel integration. Evaluate them on the obtained
+        # training threshold
         num_channels = 4
         test_predicted_arr = test_predicted_arr.reshape(test_predicted_arr.shape[0] // num_channels, num_channels)
         test_target_arr = test_target_arr.reshape(test_target_arr.shape[0] // num_channels, num_channels)
@@ -315,7 +384,8 @@ if __name__ == '__main__':
 
         # test_predicted_arr = np.where(test_predicted_arr >= 0.5, 1, 0)
 
-        am_test_concat = AccuracyMetrics(test_target_arr, test_predicted_arr, 3.97, 2, threshold=threshold)
+        am_test_concat = AccuracyMetrics(test_target_arr, test_predicted_arr, sample_window_duration, 2,
+                                         threshold=threshold)
 
         sample_accuracy_arr.append(am_test_concat.sample_accuracy)
         sample_precision_arr.append(am_test_concat.sample_precision)
@@ -330,6 +400,7 @@ if __name__ == '__main__':
         event_precision_arr.append(am_test_concat.event_precision)
         event_f_score_arr.append(am_test_concat.event_f_score)
         event_false_detections_per_hour_arr.append(am_test_concat.event_false_detections_per_hour)
+        event_average_detection_delay_arr.append(am_test_concat.event_average_detection_delay)
 
         cross_val_metrics_dict['sample_accuracy'][args.dataset] = am_test_concat.sample_accuracy
         cross_val_metrics_dict['sample_precision'][args.dataset] = am_test_concat.sample_precision
@@ -345,9 +416,12 @@ if __name__ == '__main__':
         cross_val_metrics_dict['event_f_score'][args.dataset] = am_test_concat.event_f_score
         cross_val_metrics_dict['event_false_detections_per_hour'][args.dataset] = (
             am_test_concat.event_false_detections_per_hour)
+        cross_val_metrics_dict['event_average_detection_delay'][args.dataset] = (
+            am_test_concat.event_average_detection_delay)
 
         am_test_concat = am_test_concat.as_dict()
 
+        # Log the AccuracyMetrics for each fold separately in a CSV file
         with open(os.path.join(msglogger.logdir, os.path.basename(msglogger.logdir) + '-fold_' + str(fold) + '.csv'),
                   'w', newline='') as csvfile:
             fieldnames = list(am_test_concat.keys())
@@ -355,6 +429,7 @@ if __name__ == '__main__':
             writer.writeheader()
             writer.writerow(am_test_concat)
 
+    # Calculate the mean for all the required metrics in the defined dictionary
     cross_val_metrics_dict['sample_accuracy']['sample_accuracy_mean'] = np.array(sample_accuracy_arr).mean()
     cross_val_metrics_dict['sample_precision']['sample_precision_mean'] = np.array(sample_precision_arr).mean()
     cross_val_metrics_dict['sample_sensitivity']['sample_sensitivity_mean'] = np.array(sample_sensitivity_arr).mean()
@@ -370,6 +445,8 @@ if __name__ == '__main__':
     cross_val_metrics_dict['event_f_score']['event_f_score_mean'] = np.array(event_f_score_arr).mean()
     cross_val_metrics_dict['event_false_detections_per_hour']['event_false_detections_per_hour_mean'] = (
         np.array(event_false_detections_per_hour_arr).mean())
+    cross_val_metrics_dict['event_average_detection_delay']['event_average_detection_delay_mean'] = (
+        np.array(event_average_detection_delay_arr).mean())
 
     try:
         pass
@@ -381,5 +458,6 @@ if __name__ == '__main__':
             msglogger.info('')
             msglogger.info('Log file for this run: %s', os.path.realpath(msglogger.log_filename))
 
-            with open(os.path.join(msglogger.logdir, "cross_val_metrics.json"), "w") as file:
+            # Log the required metrics for each fold and their respective mean in a JSON file
+            with open(os.path.join(msglogger.logdir, FILE_NAME + "_cross_val_metrics.json"), "w") as file:
                 json.dump(cross_val_metrics_dict, file, indent=4)
