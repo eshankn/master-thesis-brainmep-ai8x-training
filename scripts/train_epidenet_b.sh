@@ -1,9 +1,10 @@
 #!/bin/sh
 python train.py --device MAX78000 \
-  --model epidenet_b --dataset chbmit_singlech_1016samples_patient_5_leave_out_seizure_1 \
+  --model epidenet_b --dataset chbmit_singlech_768samples_patient_10_leave_out_seizure_6 \
   --epochs 1000 --batch-size 256 --lr 1e-4 --deterministic --optimizer adam \
   --confusion --pr-curves --param-hist \
   --qat-policy policies/qat_policy_epidenet_b.yaml \
-  --show-train-accuracy full \
-  --track-vloss "$@"
+  --compress policies/schedule_epidenet_b_multisteplr.yaml \
+  --show-train-accuracy full --validation-split 0.2 --enable-tensorboard \
+  --track-vloss --custom-shuffle-split "$@"
 exec $SHELL
