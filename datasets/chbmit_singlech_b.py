@@ -1,16 +1,18 @@
-# -*- coding: utf-8 -*-
+# ------------------------------------------------------------------------------------------
+# Author        : Eshank Jayant Nazare
+# File          : chbmit_singlech_b.py
+# Project       : BrainMEP
+# Modified      : 27.11.2024
+# Description   : Dataset function definitions for training
+# ------------------------------------------------------------------------------------------
 
-# import built-in module
-
-# import third-party modules
+# import modules
 from torch.utils.data import Dataset as TorchDataset
-from brainmepnas import Dataset as BrainMepNasDataset
 import torchvision.transforms as transforms
 import numpy as np
 
-# import your own module
-# import sys
-# # sys.path.insert(0, '../')
+# import custom modules
+from brainmepnas import Dataset as BrainMepNasDataset
 import ai8x
 
 
@@ -130,10 +132,48 @@ def chbmit_singlech_256samples_patient_5_leave_out_seizure_1_get_datasets(data, 
                                                            patient="5", leave_out_seizure=1)
 
 
+# --------------------------------------------------------------------------------------------------------------
+#                                               512 samples
+# --------------------------------------------------------------------------------------------------------------
+
+def chbmit_singlech_512samples_patient_5_leave_out_seizure_0_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_512samples",
+                                                           patient="5", leave_out_seizure=0)
+
+
 def chbmit_singlech_512samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
                                                            dataset_folder="/chbmit_singlech_512samples",
                                                            patient="5", leave_out_seizure=1)
+
+
+def chbmit_singlech_512samples_patient_5_leave_out_seizure_2_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_512samples",
+                                                           patient="5", leave_out_seizure=2)
+
+
+def chbmit_singlech_512samples_patient_5_leave_out_seizure_3_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_512samples",
+                                                           patient="5", leave_out_seizure=3)
+
+
+def chbmit_singlech_512samples_patient_5_leave_out_seizure_4_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_512samples",
+                                                           patient="5", leave_out_seizure=4)
+
+
+# --------------------------------------------------------------------------------------------------------------
+#                                               768 samples
+# --------------------------------------------------------------------------------------------------------------
+
+def chbmit_singlech_768samples_patient_5_leave_out_seizure_0_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_768samples",
+                                                           patient="5", leave_out_seizure=0)
 
 
 def chbmit_singlech_768samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
@@ -142,34 +182,64 @@ def chbmit_singlech_768samples_patient_5_leave_out_seizure_1_get_datasets(data, 
                                                            patient="5", leave_out_seizure=1)
 
 
+def chbmit_singlech_768samples_patient_5_leave_out_seizure_2_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_768samples",
+                                                           patient="5", leave_out_seizure=2)
+
+
+def chbmit_singlech_768samples_patient_5_leave_out_seizure_3_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_768samples",
+                                                           patient="5", leave_out_seizure=3)
+
+
+def chbmit_singlech_768samples_patient_5_leave_out_seizure_4_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_768samples",
+                                                           patient="5", leave_out_seizure=4)
+
+
+# --------------------------------------------------------------------------------------------------------------
+#                                               1016 samples
+# --------------------------------------------------------------------------------------------------------------
+
+def chbmit_singlech_1016samples_patient_5_leave_out_seizure_0_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_1016samples",
+                                                           patient="5", leave_out_seizure=0)
+
+
 def chbmit_singlech_1016samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
                                                            dataset_folder="/chbmit_singlech_1016samples",
                                                            patient="5", leave_out_seizure=1)
 
 
+def chbmit_singlech_1016samples_patient_5_leave_out_seizure_2_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_1016samples",
+                                                           patient="5", leave_out_seizure=2)
+
+
+def chbmit_singlech_1016samples_patient_5_leave_out_seizure_3_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_1016samples",
+                                                           patient="5", leave_out_seizure=3)
+
+
+def chbmit_singlech_1016samples_patient_5_leave_out_seizure_4_get_datasets(data, load_train=True, load_test=True):
+    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
+                                                           dataset_folder="/chbmit_singlech_1016samples",
+                                                           patient="5", leave_out_seizure=4)
+
+
+# --------------------------------------------------------------------------------------------------------------
+
 def chbmit_singlech_1024samples_patient_5_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
     return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
                                                            dataset_folder="/chbmit_singlech_1024samples",
                                                            patient="5", leave_out_seizure=1)
-
-
-def chbmit_singlech_512samples_patient_2_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
-    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
-                                                           dataset_folder="/chbmit_singlech_512samples",
-                                                           patient="2", leave_out_seizure=1)
-
-
-def chbmit_singlech_768samples_patient_2_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
-    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
-                                                           dataset_folder="/chbmit_singlech_768samples",
-                                                           patient="2", leave_out_seizure=1)
-
-
-def chbmit_singlech_1024samples_patient_2_leave_out_seizure_1_get_datasets(data, load_train=True, load_test=True):
-    return ChbMitSingleChannelPatientSpecific_get_datasets(data, load_train, load_test,
-                                                           dataset_folder="/chbmit_singlech_1024samples",
-                                                           patient="2", leave_out_seizure=1)
 
 
 datasets = [
@@ -203,11 +273,43 @@ datasets = [
         "output": (0, 1),
         "loader": chbmit_singlech_256samples_patient_5_leave_out_seizure_1_get_datasets,
     },
+    # ---------------------------------------- 512 samples ----------------------------------------
+    {
+        "name": "chbmit_singlech_512samples_patient_5_leave_out_seizure_0",
+        "input": (1, 512),
+        "output": (0, 1),
+        "loader": chbmit_singlech_512samples_patient_5_leave_out_seizure_0_get_datasets,
+    },
     {
         "name": "chbmit_singlech_512samples_patient_5_leave_out_seizure_1",
         "input": (1, 512),
         "output": (0, 1),
         "loader": chbmit_singlech_512samples_patient_5_leave_out_seizure_1_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_512samples_patient_5_leave_out_seizure_2",
+        "input": (1, 512),
+        "output": (0, 1),
+        "loader": chbmit_singlech_512samples_patient_5_leave_out_seizure_2_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_512samples_patient_5_leave_out_seizure_3",
+        "input": (1, 512),
+        "output": (0, 1),
+        "loader": chbmit_singlech_512samples_patient_5_leave_out_seizure_3_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_512samples_patient_5_leave_out_seizure_4",
+        "input": (1, 512),
+        "output": (0, 1),
+        "loader": chbmit_singlech_512samples_patient_5_leave_out_seizure_4_get_datasets,
+    },
+    # ---------------------------------------- 768 samples ----------------------------------------
+    {
+        "name": "chbmit_singlech_768samples_patient_5_leave_out_seizure_0",
+        "input": (1, 768),
+        "output": (0, 1),
+        "loader": chbmit_singlech_768samples_patient_5_leave_out_seizure_0_get_datasets,
     },
     {
         "name": "chbmit_singlech_768samples_patient_5_leave_out_seizure_1",
@@ -216,35 +318,61 @@ datasets = [
         "loader": chbmit_singlech_768samples_patient_5_leave_out_seizure_1_get_datasets,
     },
     {
+        "name": "chbmit_singlech_768samples_patient_5_leave_out_seizure_2",
+        "input": (1, 768),
+        "output": (0, 1),
+        "loader": chbmit_singlech_768samples_patient_5_leave_out_seizure_2_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_768samples_patient_5_leave_out_seizure_3",
+        "input": (1, 768),
+        "output": (0, 1),
+        "loader": chbmit_singlech_768samples_patient_5_leave_out_seizure_3_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_768samples_patient_5_leave_out_seizure_4",
+        "input": (1, 768),
+        "output": (0, 1),
+        "loader": chbmit_singlech_768samples_patient_5_leave_out_seizure_4_get_datasets,
+    },
+    # ---------------------------------------- 1016 samples ----------------------------------------
+    {
+        "name": "chbmit_singlech_1016samples_patient_5_leave_out_seizure_0",
+        "input": (1, 1016),
+        "output": (0, 1),
+        "loader": chbmit_singlech_1016samples_patient_5_leave_out_seizure_0_get_datasets,
+    },
+    {
         "name": "chbmit_singlech_1016samples_patient_5_leave_out_seizure_1",
         "input": (1, 1016),
         "output": (0, 1),
         "loader": chbmit_singlech_1016samples_patient_5_leave_out_seizure_1_get_datasets,
     },
     {
+        "name": "chbmit_singlech_1016samples_patient_5_leave_out_seizure_2",
+        "input": (1, 1016),
+        "output": (0, 1),
+        "loader": chbmit_singlech_1016samples_patient_5_leave_out_seizure_2_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_1016samples_patient_5_leave_out_seizure_3",
+        "input": (1, 1016),
+        "output": (0, 1),
+        "loader": chbmit_singlech_1016samples_patient_5_leave_out_seizure_3_get_datasets,
+    },
+    {
+        "name": "chbmit_singlech_1016samples_patient_5_leave_out_seizure_4",
+        "input": (1, 1016),
+        "output": (0, 1),
+        "loader": chbmit_singlech_1016samples_patient_5_leave_out_seizure_4_get_datasets,
+    },
+    # ------------------------------------------------------------------------------------------
+    {
         "name": "chbmit_singlech_1024samples_patient_5_leave_out_seizure_1",
         "input": (1, 1024),
         "output": (0, 1),
         "loader": chbmit_singlech_1024samples_patient_5_leave_out_seizure_1_get_datasets,
-    },
-    {
-        "name": "chbmit_singlech_512samples_patient_2_leave_out_seizure_1",
-        "input": (1, 512),
-        "output": (0, 1),
-        "loader": chbmit_singlech_512samples_patient_2_leave_out_seizure_1_get_datasets,
-    },
-    {
-        "name": "chbmit_singlech_768samples_patient_2_leave_out_seizure_1",
-        "input": (1, 768),
-        "output": (0, 1),
-        "loader": chbmit_singlech_768samples_patient_2_leave_out_seizure_1_get_datasets,
-    },
-    {
-        "name": "chbmit_singlech_1024samples_patient_2_leave_out_seizure_1",
-        "input": (1, 1024),
-        "output": (0, 1),
-        "loader": chbmit_singlech_1024samples_patient_2_leave_out_seizure_1_get_datasets,
-    },
+    }
 ]
 
 if __name__ == "__main__":
