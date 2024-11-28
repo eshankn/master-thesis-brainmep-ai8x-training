@@ -3,8 +3,8 @@
 # File          : eval_k_fold.py
 # Project       : BrainMEP
 # Modified      : 27.11.2024
-# Description   : Evaluation of different cross-validation folds for leave-one-seizure-out
-#                 using AccuracyMetrics
+# Description   : Evaluation of all leave-one-seizure-out cross-validation folds for a
+#                 given patient using AccuracyMetrics
 # ------------------------------------------------------------------------------------------
 
 # import modules and libraries
@@ -365,7 +365,7 @@ if __name__ == '__main__':
         else:
             sample_window_duration = 4
 
-        # Evalute the training dataset and use its threshold for test dataset
+        # Evaluate the training dataset and use its threshold for test dataset
         am_train = AccuracyMetrics(train_target_arr, train_predicted_arr, sample_window_duration, 2,
                                    threshold="max_sample_f_score")
         threshold = am_train.threshold
