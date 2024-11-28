@@ -3,16 +3,22 @@
 # File          : chbmit_singlech_b.py
 # Project       : BrainMEP
 # Modified      : 27.11.2024
-# Description   : Dataset function definitions for training
+# Description   : Dataset function definitions for training on patient 5 in the CHB-MIT
+#                 dataset
 # ------------------------------------------------------------------------------------------
 
-# import modules
+# -*- coding: utf-8 -*-
+
+# import built-in modules
 from torch.utils.data import Dataset as TorchDataset
 import torchvision.transforms as transforms
 import numpy as np
 
 # import custom modules
 from brainmepnas import Dataset as BrainMepNasDataset
+
+# import sys
+# sys.path.insert(0, '../')
 import ai8x
 
 
