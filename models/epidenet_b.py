@@ -1,3 +1,11 @@
+# ------------------------------------------------------------------------------------------
+# Author        : Eshank Jayant Nazare
+# File          : epidenet_b.py
+# Project       : BrainMEP
+# Modified      : 28.11.2024
+# Description   : EpiDeNet model architectures for implementation on MAX78000
+# ------------------------------------------------------------------------------------------
+
 import torch
 import torch.nn as nn
 
